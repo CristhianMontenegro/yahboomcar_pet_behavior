@@ -1,32 +1,21 @@
-# yahboomcar_pet_behavior V0
+# yahboomcar_pet_behavior
 
-Version minima para arrancar la navegacion autonoma existente y observar su estado.
+Paquete ROS para construir una capa de comportamiento tipo mascota sobre el
+ROSMASTER/Yahboom X3 Plus.
 
-V0 no detecta personas, no saluda, no mueve el brazo y no toma decisiones. Solo deja una base limpia para validar que el piloto automatico funciona antes de conectar YOLO.
+La version actual es una base minima: puede arrancar la base de navegacion
+existente del robot y publicar estado de observacion, pero no toma decisiones ni
+mueve el robot por si sola.
 
-## Archivos
+## Contenido
 
-- `launch/autopilot_base.launch`: arranca `laser_bringup`, `yahboomcar_navigation` y el monitor.
-- `config/autopilot_base.yaml`: parametros del mapa, topicos observados y nombres reservados para futura deteccion.
-- `scripts/autopilot_monitor.py`: monitor pasivo. No publica `/cmd_vel` ni cancela objetivos.
+- `launch/autopilot_base.launch`: launch principal para iniciar bringup,
+  navegacion nativa opcional y monitor.
+- `config/autopilot_base.yaml`: parametros de topicos, mapa y observacion.
+- `scripts/autopilot_monitor.py`: nodo pasivo que observa LiDAR, estado de
+  `move_base`, goals, joystick y detecciones opcionales.
 
-## Uso
-
-Arrancar piloto automatico completo:
-
-```bash
-roslaunch yahboomcar_pet_behavior autopilot_base.launch map:=my_map
-```
-
-Si ya tienes base y navegacion corriendo, arrancar solo el monitor:
-
-```bash
-roslaunch yahboomcar_pet_behavior autopilot_base.launch \
-  start_bringup:=false \
-  start_navigation:=false
-```
-
-## Estado Publicado
+## Estado Actual
 
 El monitor publica:
 
@@ -35,24 +24,41 @@ El monitor publica:
 /pet_behavior/autopilot_event
 ```
 
-`autopilot_state` incluye:
+No publica `/cmd_vel`, no cancela objetivos de navegacion y no controla el
+brazo. Por eso es seguro como primera capa de observacion.
 
-- `mode`: `idle`, `navigating` o `manual`
-- `map`
-- `joy_active`
-- `front_range`
-- `front_blocked`
-- `last_goal`
-- `last_result_status`
-- `last_detection`
-- `yolo_hooks_enabled`
+## Prueba Basica
 
-## Hook Futuro De YOLO
-
-V0 puede escuchar detecciones sin actuar sobre ellas:
+Monitor solamente:
 
 ```bash
-roslaunch yahboomcar_pet_behavior autopilot_base.launch enable_yolo_hooks:=true
+roslaunch yahboomcar_pet_behavior autopilot_base.launch \
+  start_bringup:=false \
+  start_navigation:=false
 ```
 
-Esto solo publica eventos como `person_seen_hook`. El robot no se detiene ni saluda todavia.
+Base, LiDAR y monitor sin navegacion por mapa:
+
+```bash
+roslaunch yahboomcar_pet_behavior autopilot_base.launch \
+  start_navigation:=false
+```
+
+Observar el estado:
+
+```bash
+rostopic echo /pet_behavior/autopilot_state
+```
+
+## Nota Sobre Mapas
+
+El argumento `map:=my_map` carga un mapa existente en `yahboomcar_nav/maps`.
+Para navegacion real se debe usar un mapa creado en el entorno donde esta el
+robot, por ejemplo:
+
+```bash
+roslaunch yahboomcar_pet_behavior autopilot_base.launch map:=casa
+```
+
+Ese comando deja el robot listo para recibir goals de navegacion, pero no inicia
+una patrulla ni decide destinos automaticamente.

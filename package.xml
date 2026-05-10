@@ -2,7 +2,7 @@
 <package format="2">
   <name>yahboomcar_pet_behavior</name>
   <version>0.1.0</version>
-  <description>Minimal pet behavior layer for greeting a detected person during autonomous navigation.</description>
+  <description>Minimal pet behavior layer for monitoring Yahboom autonomous navigation.</description>
 
   <maintainer email="todo@example.com">todo</maintainer>
   <license>TODO</license>
