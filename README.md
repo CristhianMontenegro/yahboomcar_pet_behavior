@@ -27,7 +27,25 @@ El monitor publica:
 No publica `/cmd_vel`, no cancela objetivos de navegacion y no controla el
 brazo. Por eso es seguro como primera capa de observacion.
 
-## Prueba Basica
+## Preparar La Terminal
+
+En la Jetson:
+
+```bash
+cd ~/yahboomcar_ws
+catkin_make
+source devel/setup.bash
+chmod +x src/yahboomcar_pet_behavior/scripts/autopilot_monitor.py
+```
+
+En cada terminal nueva que uses para ROS:
+
+```bash
+cd ~/yahboomcar_ws
+source devel/setup.bash
+```
+
+## Pruebas Basicas
 
 Monitor solamente:
 
@@ -50,15 +68,16 @@ Observar el estado:
 rostopic echo /pet_behavior/autopilot_state
 ```
 
-## Nota Sobre Mapas
+## Siguiente Paso
 
-El argumento `map:=my_map` carga un mapa existente en `yahboomcar_nav/maps`.
-Para navegacion real se debe usar un mapa creado en el entorno donde esta el
-robot, por ejemplo:
+Si estas pruebas funcionan, el siguiente avance recomendado es crear un modo
+`free_roam` seguro sin mapa:
 
-```bash
-roslaunch yahboomcar_pet_behavior autopilot_base.launch map:=casa
+```text
+config/free_roam.yaml
+launch/free_roam.launch
+scripts/free_roam_controller.py
 ```
 
-Ese comando deja el robot listo para recibir goals de navegacion, pero no inicia
-una patrulla ni decide destinos automaticamente.
+Ese modo haria que el robot avance lento, use `/scan` para detectar obstaculos,
+gire cuando el frente este bloqueado y se detenga si entra control manual.
