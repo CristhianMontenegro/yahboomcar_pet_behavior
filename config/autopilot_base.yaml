@@ -1,0 +1,29 @@
+# V0: autonomous navigation baseline.
+# This file prepares names/topics for later YOLO integration, but V0 does not act on detections.
+
+map: my_map
+use_rviz: true
+
+# Topics observed by the monitor.
+scan_topic: /scan
+goal_topic: /move_base_simple/goal
+move_base_goal_topic: /move_base/goal
+move_base_status_topic: /move_base/status
+move_base_result_topic: /move_base/result
+joy_topic: /JoyState
+
+# Front obstacle summary for state reporting only.
+front_angle_deg: 25.0
+front_obstacle_range: 0.35
+
+# YOLO hook for V1+.
+enable_yolo_hooks: false
+detection_topic: /DetectMsg
+detection_msg_type: target_array
+person_label: person
+min_confidence: 0.55
+
+# State output.
+state_topic: /pet_behavior/autopilot_state
+event_topic: /pet_behavior/autopilot_event
+publish_rate: 2.0
