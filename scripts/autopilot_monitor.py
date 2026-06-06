@@ -1,5 +1,25 @@
 #!/usr/bin/env python3
 # encoding: utf-8
+"""
+Archivo: autopilot_monitor.py
+
+Proposito general:
+    Nodo ROS pasivo que observa el contexto de navegacion del robot mascota.
+    Resume estado de LiDAR, move_base, joystick y detecciones opcionales de
+    YOLO, pero no mueve motores ni publica /cmd_vel.
+
+Entradas ROS principales:
+    /scan, /move_base_simple/goal, /move_base/goal, /move_base/status,
+    /move_base/result, /JoyState y, si se activa, el topic de detecciones.
+
+Salidas ROS:
+    /pet_behavior/autopilot_state y /pet_behavior/autopilot_event como JSON
+    dentro de std_msgs/String.
+
+Informacion util:
+    Este archivo alimenta al controlador y al backend con contexto seguro. Si
+    se necesita cambiar movimiento fisico, hacerlo en robot_controller.py.
+"""
 import json
 import math
 
@@ -13,7 +33,7 @@ from yahboomcar_msgs.msg import TargetArray
 
 
 class AutopilotMonitor:
-    """V0 passive monitor for the existing move_base autopilot."""
+    """Monitor pasivo V0 para el autopiloto existente basado en move_base."""
 
     def __init__(self):
         rospy.init_node("autopilot_monitor", anonymous=False)

@@ -1,0 +1,64 @@
+# Archivo: robot_control.yaml
+#
+# Proposito general:
+#   Configuracion central del controlador seguro y la telemetria del robot
+#   mascota. Aqui se declaran topics, limites de velocidad, watchdog,
+#   tiempos de parada y chequeos TF.
+#
+# Informacion util:
+#   Estos valores son conservadores para Semana 1. Si el robot fisico se mueve
+#   muy lento o muy rapido, ajustar primero default_linear_speed,
+#   default_turn_speed y los maximos antes de tocar el codigo.
+
+# Topics de comando/control.
+cmd_vel_topic: /cmd_vel
+command_topic: /robot/command
+direct_twist_topic: /robot/cmd_vel_safe
+mode_topic: /robot/mode
+emergency_stop_topic: /robot/emergency_stop
+controller_state_topic: /robot/controller_state
+controller_event_topic: /robot/events
+robot_status_topic: /robot/status
+
+# Topics de contexto observado.
+autopilot_state_topic: /pet_behavior/autopilot_state
+joy_topic: /JoyState
+scan_topic: /scan
+vel_raw_topic: /vel_raw
+odom_raw_topic: /odom_raw
+odom_topic: /odom
+voltage_topic: /voltage
+imu_raw_topic: /imu/data_raw
+imu_alt_raw_topic: /imu/imu_raw
+imu_filtered_topic: /imu/imu_data
+
+# Limites conservadores de movimiento para Semana 1.
+default_mode: idle
+max_linear_x: 0.18
+max_linear_y: 0.0
+max_angular_z: 0.70
+default_linear_speed: 0.12
+default_turn_speed: 0.45
+
+# Tiempos de seguridad.
+controller_publish_rate: 10.0
+status_publish_rate: 2.0
+default_command_duration: 0.6
+max_command_duration: 3.0
+watchdog_timeout: 1.5
+stop_publish_duration: 0.6
+topic_fresh_timeout: 2.0
+
+# Compuertas de seguridad.
+front_angle_deg: 25.0
+front_obstacle_blocks_forward: true
+manual_blocks_commands: true
+
+# Chequeos TF mostrados en /robot/status.
+tf_checks:
+  - parent: odom
+    child: base_footprint
+  - parent: base_link
+    child: laser
+  - parent: laser_link
+    child: laser

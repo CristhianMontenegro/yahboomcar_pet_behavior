@@ -1,0 +1,68 @@
+<!--
+  Archivo: pet_robot.launch
+
+  Proposito general:
+    Launch principal de la capa mascota. Coordina bringup Yahboom opcional,
+    monitor pasivo, controlador seguro y telemetria central.
+
+  Informacion util:
+    Es el "main" ROS recomendado. Con start_bringup:=false se puede
+    probar la logica sin robot fisico. Con start_navigation:=true se agrega el
+    stack de mapa/move_base, pero para pruebas basicas de motores conviene
+    dejarlo apagado.
+-->
+<launch>
+  <arg name="control_config" default="$(find yahboomcar_pet_behavior)/config/robot_control.yaml"/>
+  <arg name="monitor_config" default="$(find yahboomcar_pet_behavior)/config/autopilot_base.yaml"/>
+  <arg name="map" default="my_map"/>
+  <arg name="use_rviz" default="false"/>
+  <arg name="start_bringup" default="true"/>
+  <arg name="start_navigation" default="false"/>
+  <arg name="start_monitor" default="true"/>
+  <arg name="start_controller" default="true"/>
+  <arg name="start_status" default="true"/>
+  <arg name="enable_yolo_hooks" default="false"/>
+  <arg name="detection_topic" default="/DetectMsg"/>
+  <arg name="detection_msg_type" default="target_array"/>
+
+  <!-- Base, LiDAR, odometria, filtro IMU y TF del stack Yahboom. -->
+  <include file="$(find yahboomcar_nav)/launch/laser_bringup.launch" if="$(arg start_bringup)"/>
+
+  <!-- Navegacion por mapa opcional. Mantener apagada para pruebas fisicas basicas. -->
+  <include file="$(find yahboomcar_nav)/launch/yahboomcar_navigation.launch" if="$(arg start_navigation)">
+    <arg name="map" value="$(arg map)"/>
+    <arg name="use_rviz" value="$(arg use_rviz)"/>
+  </include>
+
+  <!-- Monitor pasivo de contexto. Observa, pero no publica /cmd_vel. -->
+  <node pkg="yahboomcar_pet_behavior"
+        type="autopilot_monitor.py"
+        name="autopilot_monitor"
+        output="screen"
+        if="$(arg start_monitor)">
+    <rosparam file="$(arg monitor_config)" command="load"/>
+    <param name="map" type="string" value="$(arg map)"/>
+    <param name="use_rviz" type="bool" value="$(arg use_rviz)"/>
+    <param name="enable_yolo_hooks" type="bool" value="$(arg enable_yolo_hooks)"/>
+    <param name="detection_topic" type="string" value="$(arg detection_topic)"/>
+    <param name="detection_msg_type" type="string" value="$(arg detection_msg_type)"/>
+  </node>
+
+  <!-- Compuerta segura principal para comandos Ghost/backend. -->
+  <node pkg="yahboomcar_pet_behavior"
+        type="robot_controller.py"
+        name="robot_controller"
+        output="screen"
+        if="$(arg start_controller)">
+    <rosparam file="$(arg control_config)" command="load"/>
+  </node>
+
+  <!-- Flujo central de estado para backend, UI y depuracion. -->
+  <node pkg="yahboomcar_pet_behavior"
+        type="robot_status.py"
+        name="robot_status"
+        output="screen"
+        if="$(arg start_status)">
+    <rosparam file="$(arg control_config)" command="load"/>
+  </node>
+</launch>

@@ -1,3 +1,15 @@
+<!--
+  Archivo: autopilot_base.launch
+
+  Proposito general:
+    Arranque base para observar navegacion Yahboom existente. Puede levantar
+    bringup, navegacion por mapa y autopilot_monitor.py, pero no inicia el
+    controlador seguro de Ghost.
+
+  Informacion util:
+    Usar este launch cuando se quiera probar solo observacion, LiDAR, move_base
+    o estado de autopiloto. Para la capa mascota completa usar pet_robot.launch.
+-->
 <launch>
   <arg name="config" default="$(find yahboomcar_pet_behavior)/config/autopilot_base.yaml"/>
   <arg name="map" default="my_map"/>
@@ -9,16 +21,16 @@
   <arg name="detection_topic" default="/DetectMsg"/>
   <arg name="detection_msg_type" default="target_array"/>
 
-  <!-- Base, lidar, odometry and TF. -->
+  <!-- Base, LiDAR, odometria y TF. -->
   <include file="$(find yahboomcar_nav)/launch/laser_bringup.launch" if="$(arg start_bringup)"/>
 
-  <!-- Existing autonomous navigation stack: map_server, AMCL, move_base and RViz. -->
+  <!-- Stack de navegacion existente: map_server, AMCL, move_base y RViz. -->
   <include file="$(find yahboomcar_nav)/launch/yahboomcar_navigation.launch" if="$(arg start_navigation)">
     <arg name="map" value="$(arg map)"/>
     <arg name="use_rviz" value="$(arg use_rviz)"/>
   </include>
 
-  <!-- Passive monitor. It does not publish cmd_vel or cancel goals. -->
+  <!-- Monitor pasivo. No publica cmd_vel ni cancela goals. -->
   <node pkg="yahboomcar_pet_behavior"
         type="autopilot_monitor.py"
         name="autopilot_monitor"

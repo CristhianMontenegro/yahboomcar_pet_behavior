@@ -1,4 +1,17 @@
 <?xml version="1.0"?>
+<!--
+  Archivo: package.xml
+
+  Proposito general:
+    Manifiesto ROS del paquete yahboomcar_pet_behavior. Describe nombre,
+    version, mantenedor, licencia y dependencias necesarias para compilar y
+    ejecutar la capa mascota.
+
+  Informacion util:
+    Cada paquete usado por los scripts o launch debe estar declarado aqui. Si
+    aparecen errores de dependencias durante catkin_make, este archivo es uno
+    de los primeros lugares que conviene revisar.
+-->
 <package format="2">
   <name>yahboomcar_pet_behavior</name>
   <version>0.1.0</version>
@@ -12,8 +25,10 @@
   <depend>actionlib_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>move_base_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>tf</depend>
   <depend>yahboomcar_msgs</depend>
 </package>

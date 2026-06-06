@@ -1,10 +1,19 @@
-# V0: autonomous navigation baseline.
-# This file prepares names/topics for later YOLO integration, but V0 does not act on detections.
+# Archivo: autopilot_base.yaml
+#
+# Proposito general:
+#   Parametros del monitor pasivo de navegacion. Define que topics observa
+#   autopilot_monitor.py, como calcula obstaculo frontal y donde publica estado
+#   y eventos.
+#
+# Informacion util:
+#   Este archivo no habilita movimiento fisico. Solo configura observacion.
+#   Los hooks de YOLO quedan apagados por defecto para mantener Semana 1
+#   aislada del modulo de vision.
 
 map: my_map
 use_rviz: true
 
-# Topics observed by the monitor.
+# Topics observados por el monitor.
 scan_topic: /scan
 goal_topic: /move_base_simple/goal
 move_base_goal_topic: /move_base/goal
@@ -12,18 +21,18 @@ move_base_status_topic: /move_base/status
 move_base_result_topic: /move_base/result
 joy_topic: /JoyState
 
-# Front obstacle summary for state reporting only.
+# Resumen de obstaculo frontal solo para reporte de estado.
 front_angle_deg: 25.0
 front_obstacle_range: 0.35
 
-# YOLO hook for V1+.
+# Hook de YOLO para V1+.
 enable_yolo_hooks: false
 detection_topic: /DetectMsg
 detection_msg_type: target_array
 person_label: person
 min_confidence: 0.55
 
-# State output.
+# Salida de estado.
 state_topic: /pet_behavior/autopilot_state
 event_topic: /pet_behavior/autopilot_event
 publish_rate: 2.0
