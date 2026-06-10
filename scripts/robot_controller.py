@@ -42,6 +42,9 @@ class RobotController:
         self.joy_active = False
         self.front_blocked = False
         self.front_range = None
+        self.front_obstacle_range = None
+        self.front_blocked_points = None
+        self.front_blocked_angle_deg = None
         self.last_autopilot_state = {}
 
         self.active_control = False
@@ -185,6 +188,9 @@ class RobotController:
         self.last_autopilot_state = payload
         self.front_blocked = bool(payload.get("front_blocked", False))
         self.front_range = payload.get("front_range")
+        self.front_obstacle_range = payload.get("front_obstacle_range")
+        self.front_blocked_points = payload.get("front_blocked_points")
+        self.front_blocked_angle_deg = payload.get("front_blocked_angle_deg")
 
     def joy_callback(self, msg):
         self.joy_active = bool(msg.data)
@@ -237,14 +243,17 @@ class RobotController:
         self.publish_event("command_rejected", {"reason": reason, "data": data})
         rospy.logwarn("robot command rejected: %s", reason)
 
-    def stop(self, reason, command="stop", source="internal", hold=False):
+    def stop(self, reason, command="stop", source="internal", hold=False, details=None):
         self.active_control = False
         self.active_twist = Twist()
         self.last_command = command
         self.last_source = source
         self.last_stop_reason = reason
         self.force_stop_until = rospy.get_time() + (self.watchdog_timeout if hold else self.stop_publish_duration)
-        self.publish_event("robot_stop", {"reason": reason, "command": command, "source": source})
+        event_data = {"reason": reason, "command": command, "source": source}
+        if details:
+            event_data["details"] = details
+        self.publish_event("robot_stop", event_data)
 
     def twist_from_command(self, command, payload):
         twist = Twist()
@@ -341,7 +350,17 @@ class RobotController:
                 self.front_blocked and
                 self.active_twist.linear.x > 0.0
             ):
-                self.stop("front_obstacle_blocked", "obstacle_guard", "autopilot_state")
+                self.stop(
+                    "front_obstacle_blocked",
+                    "obstacle_guard",
+                    "autopilot_state",
+                    details={
+                        "front_range": self.front_range,
+                        "front_obstacle_range": self.front_obstacle_range,
+                        "front_blocked_points": self.front_blocked_points,
+                        "front_blocked_angle_deg": self.front_blocked_angle_deg,
+                    },
+                )
                 return Twist(), True
             return self.active_twist, True
 
@@ -365,6 +384,9 @@ class RobotController:
             "joy_active": self.joy_active,
             "front_blocked": self.front_blocked,
             "front_range": self.front_range,
+            "front_obstacle_range": self.front_obstacle_range,
+            "front_blocked_points": self.front_blocked_points,
+            "front_blocked_angle_deg": self.front_blocked_angle_deg,
             "active_control": self.active_control,
             "publishing_cmd_vel": is_publishing,
             "last_command": self.last_command,

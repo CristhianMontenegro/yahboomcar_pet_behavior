@@ -24,6 +24,10 @@
   <arg name="enable_yolo_hooks" default="false"/>
   <arg name="detection_topic" default="/DetectMsg"/>
   <arg name="detection_msg_type" default="target_array"/>
+  <arg name="front_angle_deg" default="25.0"/>
+  <arg name="front_obstacle_range" default="0.35"/>
+  <arg name="front_obstacle_min_points" default="3"/>
+  <arg name="front_obstacle_blocks_forward" default="true"/>
 
   <!-- Base, LiDAR, odometria, filtro IMU y TF del stack Yahboom. -->
   <include file="$(find yahboomcar_nav)/launch/laser_bringup.launch" if="$(arg start_bringup)"/>
@@ -46,6 +50,9 @@
     <param name="enable_yolo_hooks" type="bool" value="$(arg enable_yolo_hooks)"/>
     <param name="detection_topic" type="string" value="$(arg detection_topic)"/>
     <param name="detection_msg_type" type="string" value="$(arg detection_msg_type)"/>
+    <param name="front_angle_deg" type="double" value="$(arg front_angle_deg)"/>
+    <param name="front_obstacle_range" type="double" value="$(arg front_obstacle_range)"/>
+    <param name="front_obstacle_min_points" type="int" value="$(arg front_obstacle_min_points)"/>
   </node>
 
   <!-- Compuerta segura principal para comandos Ghost/backend. -->
@@ -55,6 +62,7 @@
         output="screen"
         if="$(arg start_controller)">
     <rosparam file="$(arg control_config)" command="load"/>
+    <param name="front_obstacle_blocks_forward" type="bool" value="$(arg front_obstacle_blocks_forward)"/>
   </node>
 
   <!-- Flujo central de estado para backend, UI y depuracion. -->
@@ -64,5 +72,6 @@
         output="screen"
         if="$(arg start_status)">
     <rosparam file="$(arg control_config)" command="load"/>
+    <param name="front_angle_deg" type="double" value="$(arg front_angle_deg)"/>
   </node>
 </launch>

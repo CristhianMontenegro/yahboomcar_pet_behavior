@@ -24,6 +24,8 @@ joy_topic: /JoyState
 # Resumen de obstaculo frontal solo para reporte de estado.
 front_angle_deg: 25.0
 front_obstacle_range: 0.35
+# Requiere varios rayos cercanos para evitar bloqueos por ruido puntual.
+front_obstacle_min_points: 3
 
 # Hook de YOLO para V1+.
 enable_yolo_hooks: false

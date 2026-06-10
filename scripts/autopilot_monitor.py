@@ -44,6 +44,9 @@ class AutopilotMonitor:
         self.last_goal = None
         self.last_result_status = None
         self.min_front_range = None
+        self.front_valid_points = 0
+        self.front_blocked_points = 0
+        self.front_blocked_angle_deg = None
         self.last_detection = None
 
         self.state_pub = rospy.Publisher(self.state_topic, String, queue_size=5)
@@ -72,6 +75,7 @@ class AutopilotMonitor:
         self.joy_topic = rospy.get_param("~joy_topic", "/JoyState")
         self.front_angle_deg = float(rospy.get_param("~front_angle_deg", 25.0))
         self.front_obstacle_range = float(rospy.get_param("~front_obstacle_range", 0.35))
+        self.front_obstacle_min_points = max(1, int(rospy.get_param("~front_obstacle_min_points", 1)))
         self.enable_yolo_hooks = bool(rospy.get_param("~enable_yolo_hooks", False))
         self.detection_topic = rospy.get_param("~detection_topic", "/DetectMsg")
         self.detection_msg_type = rospy.get_param("~detection_msg_type", "target_array")
@@ -122,11 +126,28 @@ class AutopilotMonitor:
     def scan_callback(self, msg):
         max_angle = math.radians(self.front_angle_deg)
         valid_ranges = []
+        blocked_ranges = []
         for i, distance in enumerate(msg.ranges):
             angle = msg.angle_min + msg.angle_increment * i
             if abs(angle) <= max_angle and msg.range_min <= distance <= msg.range_max:
-                valid_ranges.append(distance)
-        self.min_front_range = min(valid_ranges) if valid_ranges else None
+                angle_deg = math.degrees(angle)
+                valid_ranges.append((distance, angle_deg))
+                if distance < self.front_obstacle_range:
+                    blocked_ranges.append((distance, angle_deg))
+
+        self.front_valid_points = len(valid_ranges)
+        self.front_blocked_points = len(blocked_ranges)
+        if valid_ranges:
+            closest = min(valid_ranges, key=lambda item: item[0])
+            self.min_front_range = closest[0]
+        else:
+            self.min_front_range = None
+
+        if blocked_ranges:
+            closest_blocking = min(blocked_ranges, key=lambda item: item[0])
+            self.front_blocked_angle_deg = closest_blocking[1]
+        else:
+            self.front_blocked_angle_deg = None
 
     def target_array_callback(self, msg):
         best = None
@@ -185,7 +206,7 @@ class AutopilotMonitor:
     def state_payload(self):
         front_blocked = (
             self.min_front_range is not None and
-            self.min_front_range < self.front_obstacle_range
+            self.front_blocked_points >= self.front_obstacle_min_points
         )
         return {
             "mode": self.mode,
@@ -193,6 +214,12 @@ class AutopilotMonitor:
             "joy_active": self.joy_active,
             "front_range": self.min_front_range,
             "front_blocked": front_blocked,
+            "front_angle_deg": self.front_angle_deg,
+            "front_obstacle_range": self.front_obstacle_range,
+            "front_obstacle_min_points": self.front_obstacle_min_points,
+            "front_valid_points": self.front_valid_points,
+            "front_blocked_points": self.front_blocked_points,
+            "front_blocked_angle_deg": self.front_blocked_angle_deg,
             "last_goal": self.last_goal,
             "last_result_status": self.last_result_status,
             "last_detection": self.last_detection,

@@ -184,6 +184,13 @@ class RobotStatus:
             "joy_active": controller.get("joy_active", self.joy_active),
             "front_blocked": controller.get("front_blocked", autopilot.get("front_blocked")),
             "front_range": controller.get("front_range", autopilot.get("front_range", self.scan_min_front)),
+            "front_obstacle_range": controller.get("front_obstacle_range", autopilot.get("front_obstacle_range")),
+            "front_blocked_points": controller.get("front_blocked_points", autopilot.get("front_blocked_points")),
+            "front_blocked_angle_deg": controller.get(
+                "front_blocked_angle_deg",
+                autopilot.get("front_blocked_angle_deg"),
+            ),
+            "front_valid_points": autopilot.get("front_valid_points"),
             "last_command": controller.get("last_command"),
             "last_source": controller.get("last_source"),
             "last_error": controller.get("last_error"),
