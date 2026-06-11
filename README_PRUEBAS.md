@@ -52,6 +52,19 @@ source devel/setup.bash
 roslaunch yahboomcar_pet_behavior pet_robot.launch
 ```
 
+Si la base no reporta bateria real en `/voltage` o `/vel_raw` queda siempre en
+cero, primero cerrar launches duplicados y relanzar limpio. Como diagnostico
+de motores se puede probar sin LiDAR:
+
+```bash
+roslaunch yahboomcar_pet_behavior pet_robot.launch start_lidar:=false
+```
+
+En esta Yahboom X3 Plus la Rosmaster responde por una ruta serial estable de
+`/dev/serial/by-path/...2.4.2...`; el launch la configura en el bringup. Evitar
+dejar dos `pet_robot.launch` vivos a la vez porque ROS reemplaza nodos con el
+mismo nombre.
+
 Terminal B, ver telemetria:
 
 ```bash
@@ -109,10 +122,14 @@ Resultado esperado:
 
 ```text
 /robot/events muestra command_accepted
-commanded_velocity.linear_x sube cerca de 0.10
+commanded_velocity.linear_x sube cerca de 0.16
 raw_velocity.linear_x cambia si la base reporta movimiento
 last_stop_reason termina como command_duration_elapsed
 ```
+
+Nota: aunque el comando de prueba pida `speed: 0.10`, el controlador eleva el
+avance no cero a `min_effective_linear_x` para superar la zona muerta de los
+motores. El valor esta en `config/robot_control.yaml`.
 
 Parar explicitamente:
 

@@ -97,6 +97,12 @@ class RobotController:
         self.max_linear_x = abs(float(rospy.get_param("~max_linear_x", 0.18)))
         self.max_linear_y = abs(float(rospy.get_param("~max_linear_y", 0.0)))
         self.max_angular_z = abs(float(rospy.get_param("~max_angular_z", 0.7)))
+        self.min_effective_linear_x = abs(float(
+            rospy.get_param("~min_effective_linear_x", 0.0)
+        ))
+        self.min_effective_angular_z = abs(float(
+            rospy.get_param("~min_effective_angular_z", 0.0)
+        ))
         self.default_linear_speed = abs(float(rospy.get_param("~default_linear_speed", 0.12)))
         self.default_turn_speed = abs(float(rospy.get_param("~default_turn_speed", 0.45)))
 
@@ -315,6 +321,16 @@ class RobotController:
         output.linear.x = self.clamp_axis(twist.linear.x, self.max_linear_x)
         output.linear.y = self.clamp_axis(twist.linear.y, self.max_linear_y)
         output.angular.z = self.clamp_axis(twist.angular.z, self.max_angular_z)
+        output.linear.x = self.apply_min_effective_speed(
+            output.linear.x,
+            self.min_effective_linear_x,
+            self.max_linear_x,
+        )
+        output.angular.z = self.apply_min_effective_speed(
+            output.angular.z,
+            self.min_effective_angular_z,
+            self.max_angular_z,
+        )
         return output
 
     def clamp_axis(self, value, limit):
@@ -325,6 +341,14 @@ class RobotController:
         if not math.isfinite(value) or limit <= 0.0:
             return 0.0
         return max(-limit, min(limit, value))
+
+    def apply_min_effective_speed(self, value, minimum, limit):
+        if value == 0.0 or minimum <= 0.0 or limit <= 0.0:
+            return value
+        magnitude = abs(value)
+        if magnitude >= minimum:
+            return value
+        return math.copysign(min(minimum, limit), value)
 
     def compute_output(self):
         now = rospy.get_time()
@@ -400,6 +424,8 @@ class RobotController:
                 "max_linear_x": self.max_linear_x,
                 "max_linear_y": self.max_linear_y,
                 "max_angular_z": self.max_angular_z,
+                "min_effective_linear_x": self.min_effective_linear_x,
+                "min_effective_angular_z": self.min_effective_angular_z,
             },
         }
 

@@ -37,7 +37,9 @@ default_mode: idle
 max_linear_x: 0.18
 max_linear_y: 0.0
 max_angular_z: 0.70
-default_linear_speed: 0.12
+min_effective_linear_x: 0.16
+min_effective_angular_z: 0.0
+default_linear_speed: 0.16
 default_turn_speed: 0.45
 
 # Tiempos de seguridad.

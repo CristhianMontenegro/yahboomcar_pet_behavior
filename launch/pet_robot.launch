@@ -14,9 +14,11 @@
 <launch>
   <arg name="control_config" default="$(find yahboomcar_pet_behavior)/config/robot_control.yaml"/>
   <arg name="monitor_config" default="$(find yahboomcar_pet_behavior)/config/autopilot_base.yaml"/>
+  <arg name="robot_type" value="$(env ROBOT_TYPE)" doc="robot_type [X1,X3,X3plus,R2,X7]"/>
   <arg name="map" default="my_map"/>
   <arg name="use_rviz" default="false"/>
   <arg name="start_bringup" default="true"/>
+  <arg name="start_lidar" default="true"/>
   <arg name="start_navigation" default="false"/>
   <arg name="start_monitor" default="true"/>
   <arg name="start_controller" default="true"/>
@@ -29,8 +31,22 @@
   <arg name="front_obstacle_min_points" default="3"/>
   <arg name="front_obstacle_blocks_forward" default="true"/>
 
-  <!-- Base, LiDAR, odometria, filtro IMU y TF del stack Yahboom. -->
-  <include file="$(find yahboomcar_nav)/launch/laser_bringup.launch" if="$(arg start_bringup)"/>
+  <!-- Base, odometria, filtro IMU y TF del stack Yahboom. Arrancar la base
+       antes del LiDAR evita que los alias ttyUSB de la Rosmaster queden mal. -->
+  <include file="$(find yahboomcar_bringup)/launch/bringup.launch" if="$(arg start_bringup)"/>
+
+  <!-- LiDAR y su TF. -->
+  <include file="$(find ydlidar_ros_driver)/launch/TG.launch" if="$(eval arg('start_bringup') and arg('start_lidar'))"/>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="base_link_to_laser"
+        args="0.0435 5.258E-05 0.11 3.1416 0 0  /base_link /laser 30"
+        if="$(eval arg('start_bringup') and arg('start_lidar') and arg('robot_type') == 'X3')"/>
+  <node pkg="tf"
+        type="static_transform_publisher"
+        name="laser_link_to_laser"
+        args="0 0 0 6.28 0 0  /laser_link /laser 30"
+        if="$(eval arg('start_bringup') and arg('start_lidar') and arg('robot_type') == 'X3plus')"/>
 
   <!-- Navegacion por mapa opcional. Mantener apagada para pruebas fisicas basicas. -->
   <include file="$(find yahboomcar_nav)/launch/yahboomcar_navigation.launch" if="$(arg start_navigation)">
